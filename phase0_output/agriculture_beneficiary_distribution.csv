@@ -1,0 +1,68 @@
+beneficiary_type,count
+Individual,625
+Registered Societies,30
+"Individual, Family",19
+"Individual, Self Help Groups (SHGS)",12
+Unknown,11
+Family,10
+All,9
+"Individual, Business Entity, Registered Societies, Self Help Groups (SHGS)",9
+Business Entity,7
+"Business Entity, Individual, Registered Societies, Self Help Groups (SHGS)",7
+"Individual, Registered Societies, Self Help Groups (SHGS)",6
+"Business Entity, Individual, Self Help Groups (SHGS), Registered Societies",5
+"Individual, Self Help Groups (SHGS), Registered Societies",5
+Village,5
+"Family, Individual",5
+"Business Entity, Industries",4
+"Business Entity, Individual",4
+"Individual, Business Entity",4
+"Registered Societies, Individual",4
+"Individual, Joint Liability Groups (JLGS), Self Help Groups (SHGS)",3
+"Individual, Self Help Groups (SHGS), Business Entity",3
+Government Organisation,3
+"Individual, Business Entity, Self Help Groups (SHGS), Registered Societies",3
+"Individual, University / Institution",3
+Industries,3
+"Individual, Joint Liability Groups (JLGS), Self Help Groups (SHGS), Registered Societies",3
+State Government,2
+"Individual, Registered Societies",2
+"Registered Societies, Government Organisation",2
+"Individual, Village",2
+Self Help Groups (SHGS),2
+"Business Entity, Industries, Self Help Groups (SHGS), Registered Societies",1
+"Individual, Business Entity, Industries",1
+"Registered Societies, Individual, Self Help Groups (SHGS)",1
+"Industries, Government Organisation, State Government, University / Institution",1
+University / Institution,1
+"Registered Societies, Joint Liability Groups (JLGS)",1
+"Self Help Groups (SHGS), Joint Liability Groups (JLGS)",1
+"Government Organisation, Registered Societies, NGO",1
+"Village, Government Organisation",1
+"Individual, Business Entity, Self Help Groups (SHGS)",1
+"NGO, Self Help Groups (SHGS), Registered Societies, Individual",1
+"Village, Individual",1
+"Individual, Registered Societies, Business Entity, NGO",1
+"Individual, Joint Liability Groups (JLGS), Self Help Groups (SHGS), Registered Societies, NGO",1
+"Self Help Groups (SHGS), Joint Liability Groups (JLGS), NGO, Individual, Government Organisation",1
+"Government Organisation, Business Entity",1
+"Government Organisation, State Government",1
+Joint Liability Groups (JLGS),1
+"Individual, Government Organisation, State Government, Registered Societies, Business Entity",1
+"Individual, Family, Business Entity",1
+"Individual, Business Entity, University / Institution, NGO",1
+"Registered Societies, Self Help Groups (SHGS), Individual",1
+"Self Help Groups (SHGS), Business Entity, Individual, Joint Liability Groups (JLGS), Registered Societies",1
+"Individual, Self Help Groups (SHGS), NGO, Registered Societies",1
+"Individual, Government Organisation, Business Entity, Industries, State Government",1
+"State Government, Village",1
+"Individual, Self Help Groups (SHGS), Business Entity, Registered Societies",1
+"Individual, Joint Liability Groups (JLGS), Registered Societies, Self Help Groups (SHGS)",1
+"Village, Individual, Family",1
+"Business Entity, Industries, Government Organisation, Registered Societies",1
+"Business Entity, Industries, Government Organisation",1
+"Individual, Industries",1
+"Family, Individual, Registered Societies, Government Organisation",1
+"Individual, Government Organisation, Registered Societies, University / Institution",1
+"Individual, Self Help Groups (SHGS), Joint Liability Groups (JLGS)",1
+"Individual, Government Organisation, NGO, Registered Societies",1
