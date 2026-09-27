@@ -1,0 +1,31 @@
+query_id,query,category,intent,difficulty
+Q01,I am a small farmer looking for financial assistance for crop cultivation.,Farmer & Finance,Financial assistance for crop cultivation,Level 2
+Q02,I am a farmer and need government help to improve my agricultural income.,Farmer & Finance,Income support,Level 3
+Q03,I need financial support for agricultural inputs and farming activities.,Farmer & Finance,Input assistance,Level 2
+Q04,I am looking for a subsidy to support my farming activities.,Farmer & Finance,Agricultural subsidy,Level 1
+Q05,I need government assistance after suffering losses in my crops.,Farmer & Finance,Crop loss assistance,Level 3
+Q06,I am a farmer looking for an agricultural loan or interest-related support.,Farmer & Finance,Agricultural loan/interest support,Level 1
+Q07,I need government assistance to purchase or obtain quality seeds for farming.,Seeds & Crops,Seed assistance,Level 1
+Q08,I am looking for support to increase crop production on my farm.,Seeds & Crops,Crop productivity,Level 2
+Q09,I need financial assistance for cultivating crops on my agricultural land.,Seeds & Crops,Crop cultivation,Level 1
+Q10,I am looking for government support for improving the quality and productivity of my crops.,Seeds & Crops,Crop development,Level 3
+Q11,I need assistance for protecting my crops from losses and improving farm production.,Seeds & Crops,Crop protection/support,Level 3
+Q12,I am a farmer looking for government support for irrigation on my farm.,Irrigation & Infrastructure,Irrigation,Level 1
+Q13,I need financial assistance to improve water availability for agriculture.,Irrigation & Infrastructure,Agricultural water/irrigation,Level 2
+Q14,I am looking for government assistance to purchase agricultural machinery and equipment.,Irrigation & Infrastructure,Agricultural machinery,Level 1
+Q15,I need a subsidy for agricultural machinery to improve farming efficiency.,Irrigation & Infrastructure,Machinery subsidy,Level 2
+Q16,I am looking for government support for horticulture and fruit cultivation.,Horticulture,Horticulture/fruit cultivation,Level 1
+Q17,I need financial assistance for vegetable or fruit crop cultivation.,Horticulture,Fruit/vegetable cultivation,Level 2
+Q18,I want support for protected cultivation or modern farming methods.,Horticulture,Protected/modern cultivation,Level 2
+Q19,I am interested in government assistance for floriculture.,Horticulture,Floriculture,Level 1
+Q20,I am looking for support to start or expand cultivation of specialized crops.,Horticulture,Specialized crop cultivation,Level 3
+Q21,I need government support for fishing and fisheries activities.,Fisheries,Fisheries support,Level 1
+Q22,I am a fish farmer looking for financial assistance for fish farming.,Fisheries,Fish farming assistance,Level 2
+Q23,I need assistance for improving my fishing equipment or fishing activities.,Fisheries,Fishing equipment/activity support,Level 2
+Q24,I am looking for government support for fish production and marketing.,Fisheries,Fish production/marketing,Level 2
+Q25,I am a woman farmer looking for government financial assistance for agriculture.,Women & Gender,Women farmer assistance,Level 2
+Q26,I am a girl studying agriculture and looking for financial assistance.,Women & Gender,Girl/student financial assistance,Level 2
+Q27,I am a woman interested in starting an agricultural or allied activity with government support.,Women & Gender,Women agricultural entrepreneurship/support,Level 3
+Q28,I am a senior citizen involved in agriculture and looking for government support.,Demographic & Social,Senior citizen agricultural support,Level 3
+Q29,I am a farmer from a Scheduled Caste or Scheduled Tribe community looking for agricultural assistance.,Demographic & Social,SC/ST agricultural assistance,Level 3
+Q30,I am a person with a disability looking for government support for agricultural activities.,Demographic & Social,Disability-related agricultural support,Level 3
