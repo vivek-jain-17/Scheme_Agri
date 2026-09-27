@@ -1,5 +1,5 @@
 # ============================================================
-# PHASE 1A
+# EVALUATION VERSION
 # TF-IDF + COSINE SIMILARITY
 # Government Agriculture Scheme Recommendation System
 # ============================================================
@@ -7,7 +7,6 @@
 import pandas as pd
 import numpy as np
 import re
-
 from pathlib import Path
 
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -18,7 +17,9 @@ from sklearn.metrics.pairwise import cosine_similarity
 # 1. CONFIGURATION
 # ============================================================
 
-INPUT = Path("agriculture_schemes.csv")
+DATASET = Path("agriculture_schemes.csv")
+EVALUATION_QUERIES = Path("evaluation_queries.csv")
+OUTPUT_FILE = Path("evaluation_results_tfidf.csv")
 
 TOP_K = 10
 
@@ -28,66 +29,44 @@ TOP_K = 10
 # ============================================================
 
 print("=" * 70)
-print("PHASE 1A - TF-IDF BASELINE RECOMMENDER")
+print("TF-IDF EVALUATION")
 print("=" * 70)
 
-df = pd.read_csv(INPUT)
+df = pd.read_csv(DATASET)
 
 print(f"\nDataset loaded successfully.")
-print(f"Number of schemes: {len(df)}")
+print(f"Raw schemes: {len(df)}")
 
 
 # ============================================================
-# 3. VALIDATE REQUIRED COLUMN
+# 3. VALIDATE DATASET
 # ============================================================
 
-if "scheme_text" not in df.columns:
-    raise ValueError(
-        "Column 'scheme_text' not found in dataset."
-    )
+required_columns = ["name", "scheme_text"]
 
-if "name" not in df.columns:
-    raise ValueError(
-        "Column 'name' not found in dataset."
-    )
+for column in required_columns:
+    if column not in df.columns:
+        raise ValueError(
+            f"Required column '{column}' was not found in dataset."
+        )
+
+
+# Keep a stable scheme ID so the same scheme can be identified
+# across TF-IDF, BGE-M3 and E5 evaluation outputs.
+df["scheme_id"] = np.arange(len(df))
 
 
 # ============================================================
-# 4. BASIC TEXT CLEANING
+# 4. TEXT CLEANING
 # ============================================================
 
 def clean_text(text):
-
+    """Apply the same text normalization across all three models."""
     text = str(text)
-
-    # Remove HTML tags
-    text = re.sub(
-        r"<[^>]+>",
-        " ",
-        text
-    )
-
-    # Remove URLs
-    text = re.sub(
-        r"https?://\S+|www\.\S+",
-        " ",
-        text
-    )
-
-    # Remove markdown formatting
-    text = re.sub(
-        r"[*#>`_]",
-        " ",
-        text
-    )
-
-    # Normalize whitespace
-    text = re.sub(
-        r"\s+",
-        " ",
-        text
-    )
-
+    text = re.sub(r"<[^>]+>", " ", text)
+    text = re.sub(r"https?://\S+|www\.\S+", " ", text)
+    text = re.sub(r"[*#>`_]", " ", text)
+    text = re.sub(r"\s+", " ", text)
     return text.strip()
 
 
@@ -98,328 +77,163 @@ df["scheme_text"] = (
 )
 
 
-# ============================================================
-# 5. REMOVE EMPTY TEXT RECORDS
-# ============================================================
-
+# Remove empty scheme records
 before = len(df)
 
 df = df[
     df["scheme_text"].str.strip() != ""
 ].copy()
 
-after = len(df)
+df = df.reset_index(drop=True)
 
-print(f"Removed empty text records: {before - after}")
-print(f"Usable schemes: {after}")
+print(f"Removed empty schemes: {before - len(df)}")
+print(f"Usable schemes: {len(df)}")
 
 
 # ============================================================
-# 6. TF-IDF VECTORIZATION
+# 5. LOAD EVALUATION QUERIES
+# ============================================================
+
+queries = pd.read_csv(EVALUATION_QUERIES)
+
+required_query_columns = ["query_id", "query"]
+
+for column in required_query_columns:
+    if column not in queries.columns:
+        raise ValueError(
+            f"Required query column '{column}' was not found "
+            f"in evaluation_queries.csv."
+        )
+
+queries = queries[
+    ["query_id", "query"]
+].copy()
+
+queries["query"] = queries["query"].fillna("").apply(clean_text)
+
+if queries["query"].str.strip().eq("").any():
+    raise ValueError("One or more evaluation queries are empty.")
+
+print(f"Evaluation queries: {len(queries)}")
+
+
+# ============================================================
+# 6. CREATE TF-IDF VECTORS
 # ============================================================
 
 print("\n" + "=" * 70)
 print("CREATING TF-IDF VECTORS")
 print("=" * 70)
 
-
 vectorizer = TfidfVectorizer(
-
-    # Ignore extremely rare words
     min_df=1,
-
-    # Ignore words appearing in almost every document
     max_df=0.95,
-
-    # Include single words and two-word phrases
     ngram_range=(1, 2),
-
-    # Limit vocabulary size
     max_features=30000,
-
-    # Normalize vectors
     norm="l2",
-
-    # Ignore common English stopwords
     stop_words="english"
 )
-
 
 scheme_vectors = vectorizer.fit_transform(
     df["scheme_text"]
 )
-
 
 print(f"TF-IDF matrix shape: {scheme_vectors.shape}")
 print(f"Vocabulary size: {len(vectorizer.vocabulary_)}")
 
 
 # ============================================================
-# 7. SHOW SAMPLE FEATURES
+# 7. RUN STANDARDIZED EVALUATION
 # ============================================================
 
-feature_names = vectorizer.get_feature_names_out()
+print("\n" + "=" * 70)
+print("RUNNING EVALUATION QUERIES")
+print("=" * 70)
 
-print("\nSample TF-IDF features:")
+all_results = []
 
-print(
-    feature_names[:50]
-)
-
-
-# ============================================================
-# 8. RECOMMENDATION FUNCTION
-# ============================================================
-
-def recommend_schemes(
-    user_query,
-    top_k=10
+for query_number, row in enumerate(
+    queries.itertuples(index=False),
+    start=1
 ):
+    query_id = row.query_id
+    user_query = row.query
 
-    # --------------------------------------------------------
-    # Clean user query
-    # --------------------------------------------------------
-
-    user_query = clean_text(
-        user_query
+    print(
+        f"\n[{query_number}/{len(queries)}] "
+        f"{query_id}: {user_query}"
     )
 
-    if not user_query:
-        print("Please enter a valid query.")
-        return None
-
-
-    # --------------------------------------------------------
-    # Convert user query into TF-IDF vector
-    # --------------------------------------------------------
-
-    query_vector = vectorizer.transform(
-        [user_query]
-    )
-
-
-    # --------------------------------------------------------
-    # Calculate cosine similarity
-    # --------------------------------------------------------
+    query_vector = vectorizer.transform([user_query])
 
     similarity_scores = cosine_similarity(
         query_vector,
         scheme_vectors
     ).flatten()
 
-
-    # --------------------------------------------------------
-    # Get top K scheme indices
-    # --------------------------------------------------------
-
     top_indices = np.argsort(
         similarity_scores
-    )[::-1][:top_k]
+    )[::-1][:TOP_K]
+
+    for rank, idx in enumerate(top_indices, start=1):
+        result_row = df.iloc[idx]
+
+        all_results.append({
+            "model": "TF-IDF",
+            "query_id": query_id,
+            "query": user_query,
+            "rank": rank,
+            "scheme_id": int(result_row["scheme_id"]),
+            "scheme_name": result_row["name"],
+            "similarity_score": float(similarity_scores[idx]),
+            "category": result_row.get("category", ""),
+            "beneficiary_type": result_row.get(
+                "beneficiary_type", ""
+            )
+        })
 
 
-    # --------------------------------------------------------
-    # Create recommendation dataframe
-    # --------------------------------------------------------
+# ============================================================
+# 8. SAVE STANDARDIZED RESULTS
+# ============================================================
 
-    results = df.iloc[
-        top_indices
-    ].copy()
+results_df = pd.DataFrame(all_results)
 
-    results["similarity_score"] = (
-        similarity_scores[top_indices]
-    )
-
-    results["rank"] = range(
-        1,
-        len(results) + 1
-    )
-
-
-    # --------------------------------------------------------
-    # Reorder columns
-    # --------------------------------------------------------
-
-    preferred_columns = [
+results_df = results_df[
+    [
+        "model",
+        "query_id",
+        "query",
         "rank",
-        "name",
+        "scheme_id",
+        "scheme_name",
         "similarity_score",
         "category",
-        "beneficiary_type",
-        "benefits",
-        "eligibility_text",
-        "application_process"
+        "beneficiary_type"
     ]
+]
 
-    available_columns = [
-        col
-        for col in preferred_columns
-        if col in results.columns
-    ]
-
-    results = results[
-        available_columns
-    ]
-
-
-    return results
-
-
-# ============================================================
-# 9. TEST RECOMMENDATION
-# ============================================================
-
-print("\n" + "=" * 70)
-print("TEST RECOMMENDATION")
-print("=" * 70)
-
-
-test_query = (
-    "I am a small farmer looking for financial "
-    "assistance for crop cultivation."
+results_df.to_csv(
+    OUTPUT_FILE,
+    index=False
 )
 
-
-print(f"\nUser query:")
-print(test_query)
-
-
-results = recommend_schemes(
-    test_query,
-    TOP_K
-)
-
-
-# ============================================================
-# 10. DISPLAY RESULTS
-# ============================================================
-
 print("\n" + "=" * 70)
-print(f"TOP {TOP_K} RECOMMENDED SCHEMES")
+print("EVALUATION COMPLETE")
 print("=" * 70)
 
+print(f"Queries evaluated: {len(queries)}")
+print(f"Results generated: {len(results_df)}")
+print(f"Expected results: {len(queries) * TOP_K}")
+print(f"Output file: {OUTPUT_FILE}")
 
-if results is not None:
-
-    for _, row in results.iterrows():
-
-        print(
-            f"\nRank {int(row['rank'])}"
-        )
-
-        print(
-            f"Scheme: {row['name']}"
-        )
-
-        print(
-            f"Similarity: "
-            f"{row['similarity_score']:.4f}"
-        )
-
-        if "category" in row:
-            print(
-                f"Category: {row['category']}"
-            )
-
-        if "beneficiary_type" in row:
-            print(
-                f"Beneficiary: "
-                f"{row['beneficiary_type']}"
-            )
-
-        if "benefits" in row:
-            print(
-                f"Benefits: {row['benefits']}"
-            )
-
-
-# ============================================================
-# 11. INTERACTIVE MODE
-# ============================================================
-
-print("\n" + "=" * 70)
-print("INTERACTIVE RECOMMENDATION")
-print("=" * 70)
-
+print("\nFirst query results:")
 print(
-    "\nEnter your requirement in natural language."
+    results_df[
+        results_df["query_id"] == queries.iloc[0]["query_id"]
+    ][
+        ["rank", "scheme_name", "similarity_score"]
+    ].to_string(index=False)
 )
 
-print(
-    "Type 'exit' to stop."
-)
-
-
-while True:
-
-    user_query = input(
-        "\nYour requirement: "
-    ).strip()
-
-    if user_query.lower() == "exit":
-        print("\nExiting recommendation system.")
-        break
-
-    if not user_query:
-        print(
-            "Please enter a requirement."
-        )
-        continue
-
-
-    results = recommend_schemes(
-        user_query,
-        TOP_K
-    )
-
-
-    if results is None:
-        continue
-
-
-    print(
-        "\n" + "-" * 70
-    )
-
-    print(
-        f"TOP {TOP_K} RECOMMENDATIONS"
-    )
-
-    print(
-        "-" * 70
-    )
-
-
-    for _, row in results.iterrows():
-
-        print(
-            f"\n{int(row['rank'])}. "
-            f"{row['name']}"
-        )
-
-        print(
-            f"   Similarity: "
-            f"{row['similarity_score']:.4f}"
-        )
-
-        if "beneficiary_type" in row:
-
-            print(
-                f"   Beneficiary: "
-                f"{row['beneficiary_type']}"
-            )
-
-        if "benefits" in row:
-
-            print(
-                f"   Benefits: "
-                f"{row['benefits']}"
-            )
-
-
-# ============================================================
-# END
-# ============================================================
-
-print("\n" + "=" * 70)
-print("PHASE 1A COMPLETE")
-print("=" * 70)
+print("\nTF-IDF evaluation finished successfully.")
